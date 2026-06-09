@@ -6,134 +6,14 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 
+from bilingual_interest_detection.defaults import (
+    DEFAULT_IGNORE_WORDS,
+    DEFAULT_REGEX_RANGES,
+    DEFAULT_TERM_RANGES,
+    ENGLISH_SUFFIXES,
+    SPANISH_SUFFIXES,
+)
 from bilingual_interest_detection.schemas import InterestMatch, InterestResult, Language
-
-DEFAULT_TERM_RANGES: dict[int, dict[str, set[str]]] = {
-    20: {
-        "es": {"viajes", "viajar", "lugar", "avion", "turismo"},
-        "en": {"travel", "trip", "place", "plane", "tourism"},
-    },
-    50: {
-        "es": {"animal", "mascota"},
-        "en": {"animal", "pet"},
-    },
-    70: {
-        "es": {"cucaracha", "enjambre", "insecto"},
-        "en": {"cockroach", "swarm", "insect"},
-    },
-    100: {
-        "es": {"diabetes", "glucosa", "dolor", "pinchazo", "mareo", "azucar"},
-        "en": {
-            "blood sugar",
-            "diabetes",
-            "dizziness",
-            "dizzy",
-            "glucose",
-            "injection",
-            "low blood sugar",
-            "pain",
-        },
-    },
-}
-
-DEFAULT_REGEX_RANGES: dict[int, dict[str, tuple[str, ...]]] = {
-    100: {
-        "es": (
-            r"\bglucosa\s+baja\b",
-            r"\bazucar\s+baja\b",
-        ),
-        "en": (
-            r"\bblood\s+sugar\b",
-            r"\blow\s+blood\s+sugar\b",
-            r"\blow\s+glucose\b",
-        ),
-    },
-}
-
-DEFAULT_IGNORE_WORDS: dict[str, set[str]] = {
-    "es": {
-        "a",
-        "ante",
-        "bajo",
-        "con",
-        "contra",
-        "de",
-        "desde",
-        "durante",
-        "el",
-        "en",
-        "entre",
-        "es",
-        "excepto",
-        "hacia",
-        "hasta",
-        "la",
-        "las",
-        "los",
-        "me",
-        "mediante",
-        "o",
-        "para",
-        "por",
-        "segun",
-        "si",
-        "sin",
-        "sobre",
-        "tras",
-        "un",
-        "una",
-        "unas",
-        "unos",
-        "y",
-        "yo",
-    },
-    "en": {
-        "a",
-        "about",
-        "an",
-        "and",
-        "at",
-        "for",
-        "from",
-        "i",
-        "in",
-        "is",
-        "it",
-        "me",
-        "my",
-        "of",
-        "on",
-        "or",
-        "the",
-        "to",
-        "with",
-    },
-}
-
-SPANISH_SUFFIXES = (
-    "iendo",
-    "ando",
-    "ado",
-    "ido",
-    "ar",
-    "er",
-    "ir",
-    "as",
-    "os",
-    "es",
-    "s",
-    "a",
-    "o",
-    "e",
-)
-
-ENGLISH_SUFFIXES = (
-    "ing",
-    "ed",
-    "ies",
-    "es",
-    "s",
-)
 
 
 @dataclass

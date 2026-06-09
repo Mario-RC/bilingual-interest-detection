@@ -4,38 +4,47 @@ from bilingual_interest_detection import InterestScorer, detect_interest, score_
 
 
 class InterestScorerTest(unittest.TestCase):
-    def test_scores_spanish_medical_keywords_high(self) -> None:
-        self.assertEqual(score_interest("Siento dolor y mareo.", language="es"), 100)
-
-    def test_scores_english_medical_keywords_high(self) -> None:
+    def test_scores_spanish_maximum_keywords(self) -> None:
         self.assertEqual(
-            score_interest("I feel dizzy and my glucose is low.", language="en"),
+            score_interest("Me interesa la robótica y la psicología.", language="es"),
             100,
         )
 
-    def test_scores_english_blood_sugar_regex_high(self) -> None:
-        result = detect_interest("My blood sugar is low.", language="en")
+    def test_scores_english_maximum_keywords(self) -> None:
+        self.assertEqual(
+            score_interest("I love robotics and artificial intelligence.", language="en"),
+            100,
+        )
 
-        self.assertEqual(result.score, 100)
-        self.assertTrue(any(match.kind == "regex" for match in result.matches))
+    def test_scores_english_medium_keywords(self) -> None:
+        self.assertEqual(score_interest("I like history and video games.", language="en"), 50)
 
-    def test_scores_spanish_travel_keywords_low(self) -> None:
-        self.assertEqual(score_interest("Me gusta viajar a nuevos lugares.", language="es"), 20)
+    def test_scores_spanish_low_keywords(self) -> None:
+        self.assertEqual(
+            score_interest("Me aburren la política y los impuestos.", language="es"),
+            25,
+        )
 
-    def test_scores_english_travel_keywords_low(self) -> None:
-        self.assertEqual(score_interest("I enjoy traveling to new places.", language="en"), 20)
+    def test_scores_english_low_keywords(self) -> None:
+        self.assertEqual(
+            score_interest("Politics and taxes are boring.", language="en"),
+            25,
+        )
+
+    def test_scores_spanish_high_keywords(self) -> None:
+        self.assertEqual(score_interest("Me entusiasman el cine y la música.", language="es"), 75)
 
     def test_scores_unknown_text_zero(self) -> None:
         self.assertEqual(score_interest("Hoy he leído un libro.", language="es"), 0)
 
     def test_auto_language_returns_best_match(self) -> None:
-        result = detect_interest("Siento pinchazos y dizziness.")
+        result = detect_interest("Me gusta el cine and social interaction.")
 
         self.assertEqual(result.score, 100)
         self.assertTrue(result.matches)
 
     def test_accent_normalization(self) -> None:
-        self.assertEqual(score_interest("Quiero viajar en avión.", language="es"), 20)
+        self.assertEqual(score_interest("Me gusta la musica y la electronica.", language="es"), 75)
 
     def test_custom_ranges_are_supported(self) -> None:
         scorer = InterestScorer(term_ranges={80: {"en": {"robotics"}}}, regex_ranges={})
@@ -45,7 +54,17 @@ class InterestScorerTest(unittest.TestCase):
         self.assertEqual(result.score, 80)
         self.assertEqual(result.matches[0].value, "robotics")
 
+    def test_custom_regex_ranges_are_supported(self) -> None:
+        scorer = InterestScorer(
+            term_ranges={},
+            regex_ranges={90: {"en": (r"\bmachine learning\b",)}},
+        )
+
+        result = scorer.analyze("I want to study machine learning.", language="en")
+
+        self.assertEqual(result.score, 90)
+        self.assertEqual(result.matches[0].kind, "regex")
+
 
 if __name__ == "__main__":
     unittest.main()
-

@@ -3,8 +3,8 @@ from bilingual_interest_detection import detect_interest
 
 def main() -> None:
     examples = [
-        ("es", "Siento pinchazos en el brazo y un poco de mareo."),
-        ("en", "I feel dizzy and my glucose is low."),
+        ("es", "Me interesa la robótica y la psicología."),
+        ("en", "I love robotics and artificial intelligence."),
     ]
 
     for language, text in examples:
@@ -16,4 +16,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

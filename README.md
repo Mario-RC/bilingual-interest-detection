@@ -1,13 +1,12 @@
 # Bilingual Interest Detection
 
-Standalone bilingual interest scoring for dialogue systems. The package extracts
-the lightweight interest-scoring idea from the affective dialogue system and
-turns it into a reusable Python library with a CLI, structured results, tests,
-and Spanish/English rules.
+Standalone bilingual interest scoring for dialogue systems. The package turns
+rule-based user-interest detection into a reusable Python library with a CLI,
+structured results, tests, and Spanish/English rules.
 
 The detector is intentionally model-free: it does not download LLMs or machine
-learning models. It uses deterministic keyword and regex rules to assign a score
-from `0` to `100` to the current user message.
+learning models. It uses deterministic keyword rules, plus optional custom regex
+rules, to assign a score from `0` to `100` to the current user message.
 
 ## Features
 
@@ -21,19 +20,41 @@ from `0` to `100` to the current user message.
 
 ## Scoring Overview
 
-The default ranges mirror the original scoring behavior and extend it with
-English equivalents:
+Each message is assigned the highest score associated with any matching keyword.
+The resulting interest signal can be used by dialogue systems to modulate
+conversation strategy, internal engagement variables, speech expressiveness, or
+proactive topic elaboration.
+
+The default ranges are organized into four scoring tiers:
 
 ```text
 0      no configured interest signal detected
-20     travel or place-related terms
-50     animal-related terms
-70     insect, cockroach, or swarm-related terms
-100    health, glucose, pain, dizziness, or diabetes-related terms
+25     low-interest topics such as politics, religion, football, wars, or taxes
+50     medium-interest topics such as mathematics, cars, history, or languages
+75     high-interest topics such as cinema, music, space, electronics, or travel
+100    maximum-interest topics such as robotics, animals, AI, emotions, or psychology
 ```
 
 When several rules match, the detector returns the highest score. `language="auto"`
 tries both Spanish and English rule sets and returns the strongest match.
+
+## Default Keywords
+
+```text
+Score   English                                      Spanish
+25      politics, religion, football, wars,          política, religión, fútbol, guerras,
+        economy, gossip, bureaucracy, taxes,         economía, cotilleos, burocracia,
+        finance, strategy                            impuestos, finanzas, estrategia
+50      mathematics, learning, cars, cartoons,       matemáticas, aprender, coches,
+        history, literature, video games,            dibujos animados, historia, literatura,
+        languages, physics, geography                videojuegos, idiomas, física, geografía
+75      cinema, theater, music, space, mechanics,    cine, teatro, música, espacio, mecánica,
+        the avengers, science fiction, electronics,  los vengadores, ciencia ficción, electrónica,
+        engines, travel, fashion                     motor, viajes, moda
+100     robotics, animals, research, technology,     robótica, animales, investigación, tecnología,
+        pilates, artificial intelligence, emotions,  pilates, inteligencia artificial, emociones,
+        social interaction, programming, psychology  interacción social, programación, psicología
+```
 
 ## Installation
 
@@ -46,25 +67,25 @@ python -m pip install -e ".[dev]"
 Spanish:
 
 ```bash
-interest-detect "Siento dolor y mareo." --language es
+interest-detect "Me interesa la robótica y la psicología." --language es
 ```
 
 English:
 
 ```bash
-interest-detect "I feel dizzy and my glucose is low." --language en
+interest-detect "I love robotics and artificial intelligence." --language en
 ```
 
 JSON output:
 
 ```bash
-interest-detect "My blood sugar is low." --language en --json --pretty
+interest-detect "I love robotics and artificial intelligence." --language en --json --pretty
 ```
 
 Score-only output:
 
 ```bash
-interest-detect "Me gusta viajar a nuevos lugares." --language es --score-only
+interest-detect "Me aburren la política y los impuestos." --language es --score-only
 ```
 
 ## Python API
@@ -72,9 +93,9 @@ interest-detect "Me gusta viajar a nuevos lugares." --language es --score-only
 ```python
 from bilingual_interest_detection import detect_interest, score_interest
 
-spanish_score = score_interest("Siento dolor y mareo.", language="es")
+spanish_score = score_interest("Me interesa la robótica y la psicología.", language="es")
 english_result = detect_interest(
-    "I feel dizzy and my glucose is low.",
+    "I love robotics and artificial intelligence.",
     language="en",
 )
 
@@ -84,6 +105,11 @@ print([match.value for match in english_result.matches])
 ```
 
 ## Custom Rules
+
+The built-in word lists and stopwords live in
+`src/bilingual_interest_detection/defaults.py`, keeping the scoring logic focused
+on matching and ranking. For small adaptations, you can either edit that file or
+pass custom ranges at runtime.
 
 You can pass your own ranges when creating a scorer:
 
@@ -111,4 +137,3 @@ tests/                              unit tests
 examples/                           minimal usage examples
 docs/                               scoring notes
 ```
-
